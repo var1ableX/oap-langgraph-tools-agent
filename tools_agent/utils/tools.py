@@ -1,34 +1,51 @@
 from typing import Annotated
-from langchain_core.tools import StructuredTool, ToolException, tool
+from langchain_core.tools import BaseTool, ToolException, tool
 import aiohttp
 import re
 from mcp import McpError
+from mcp import types
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
 
 
-def wrap_mcp_authenticate_tool(tool: StructuredTool) -> StructuredTool:
+async def wrap_mcp_authenticate_tool(
+    mcp_tool: types.Tool, access_token: str = "", mcp_url: str = ""
+) -> BaseTool:
     """Wrap the tool coroutine to handle `interaction_required` MCP error.
 
     Tried to obtain the URL from the error, which the LLM can use to render a link."""
 
-    old_coroutine = tool.coroutine
+    @tool(
+        mcp_tool.name,
+        description=mcp_tool.description,
+        args_schema=mcp_tool.inputSchema,
+    )
+    async def langchain_tool(**kwargs):
+        async with streamablehttp_client(
+            mcp_url,
+            headers={"Authorization": f"Bearer {access_token}"},
+        ) as (
+            read_stream,
+            write_stream,
+            _,
+        ):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                try:
+                    result = await session.call_tool(mcp_tool.name, kwargs)
+                    return result.content
+                except McpError as e:
+                    if e.error.code == -32003 and e.error.data:
+                        error_message = (
+                            ((e.error.data or {}).get("message") or {}).get("text")
+                        ) or "Required interaction"
 
-    async def wrapped_mcp_coroutine(**kwargs):
-        try:
-            return await old_coroutine(**kwargs)
-        except McpError as e:
-            if e.error.code == -32003 and e.error.data:
-                error_message = (
-                    ((e.error.data or {}).get("message") or {}).get("text")
-                ) or "Required interaction"
+                        if url := (e.error.data or {}).get("url"):
+                            error_message += f": {url}"
 
-                if url := (e.error.data or {}).get("url"):
-                    error_message += f": {url}"
+                        raise ToolException(error_message)
 
-                raise ToolException(error_message)
-            raise e
-
-    tool.coroutine = wrapped_mcp_coroutine
-    return tool
+    return langchain_tool
 
 
 async def create_rag_tool(rag_url: str, collection_id: str, access_token: str):

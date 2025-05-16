@@ -4,10 +4,12 @@ from pydantic import BaseModel, Field
 from langgraph.prebuilt import create_react_agent
 from tools_agent.utils.tools import create_rag_tool
 from langchain.chat_models import init_chat_model
-from langchain_mcp_adapters.client import MultiServerMCPClient
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+import mcp.types as types
 from tools_agent.utils.token import fetch_tokens
-from contextlib import asynccontextmanager
 from tools_agent.utils.tools import wrap_mcp_authenticate_tool
+from contextlib import asynccontextmanager
 
 UNEDITABLE_SYSTEM_PROMPT = "\nIf the tool throws an error requiring authentication, provide the user with a Markdown link to the authentication page and prompt them to authenticate."
 
@@ -128,48 +130,74 @@ class GraphConfigPydantic(BaseModel):
 
 @asynccontextmanager
 async def graph(config: RunnableConfig):
-    async with MultiServerMCPClient() as mcp_client:
-        cfg = GraphConfigPydantic(**config.get("configurable", {}))
-        tools = []
+    cfg = GraphConfigPydantic(**config.get("configurable", {}))
+    tools = []
 
-        supabase_token = config.get("configurable", {}).get("x-supabase-access-token")
-        if cfg.rag and cfg.rag.rag_url and cfg.rag.collections and supabase_token:
-            for collection in cfg.rag.collections:
-                rag_tool = await create_rag_tool(
-                    cfg.rag.rag_url, collection, supabase_token
-                )
-                tools.append(rag_tool)
+    supabase_token = config.get("configurable", {}).get("x-supabase-access-token")
+    if cfg.rag and cfg.rag.rag_url and cfg.rag.collections and supabase_token:
+        for collection in cfg.rag.collections:
+            rag_tool = await create_rag_tool(
+                cfg.rag.rag_url, collection, supabase_token
+            )
+            tools.append(rag_tool)
 
-        if (
-            cfg.mcp_config
-            and cfg.mcp_config.url
-            and cfg.mcp_config.tools
-            and (mcp_tokens := await fetch_tokens(config))
+    if (
+        cfg.mcp_config
+        and cfg.mcp_config.url
+        and cfg.mcp_config.tools
+        and (mcp_tokens := await fetch_tokens(config))
+    ):
+        url = cfg.mcp_config.url.rstrip("/") + "/mcp"
+        access_token = mcp_tokens["access_token"]
+        async with streamablehttp_client(
+            url,
+            headers={"Authorization": f"Bearer {access_token}"},
+        ) as (
+            read_stream,
+            write_stream,
+            _,
         ):
-            await mcp_client.connect_to_server(
-                "mcp_server",
-                transport="streamable_http",
-                url=cfg.mcp_config.url.rstrip("/") + "/mcp",
-                headers={"Authorization": f"Bearer {mcp_tokens['access_token']}"},
-            )
+            accumulated_mcp_tools: list[types.Tool] = []
 
-            tools.extend(
-                [
-                    wrap_mcp_authenticate_tool(tool)
-                    for tool in mcp_client.get_tools()
-                    if tool.name in cfg.mcp_config.tools
-                ]
-            )
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                remaining_tool_names_to_find = set(cfg.mcp_config.tools)
+                cursor: str | None = None
 
-        model = init_chat_model(
-            cfg.model_name,
-            temperature=cfg.temperature,
-            max_tokens=cfg.max_tokens,
-        )
+                while True:
+                    mcp_tools = await session.list_tools(cursor=cursor)
 
-        yield create_react_agent(
-            prompt=cfg.system_prompt + UNEDITABLE_SYSTEM_PROMPT,
-            model=model,
-            tools=tools,
-            config_schema=GraphConfigPydantic,
-        )
+                    if cursor is not None and mcp_tools.nextCursor == cursor:
+                        raise Exception("New cursor is same as old cursor")
+
+                    cursor = mcp_tools.nextCursor
+
+                    if mcp_tools.tools:
+                        for tool in mcp_tools.tools:
+                            if tool.name in remaining_tool_names_to_find:
+                                accumulated_mcp_tools.append(tool)
+                                tools.append(
+                                    await wrap_mcp_authenticate_tool(
+                                        tool, access_token=access_token, mcp_url=url
+                                    )
+                                )
+                                remaining_tool_names_to_find.remove(tool.name)
+
+                    all_required_tools_found = not remaining_tool_names_to_find
+                    no_more_pages = not mcp_tools.nextCursor
+
+                    if all_required_tools_found or no_more_pages:
+                        break
+
+    model = init_chat_model(
+        cfg.model_name,
+        temperature=cfg.temperature,
+        max_tokens=cfg.max_tokens,
+    )
+
+    yield create_react_agent(
+        prompt=cfg.system_prompt + UNEDITABLE_SYSTEM_PROMPT,
+        model=model,
+        tools=tools,
+        config_schema=GraphConfigPydantic,
+    )

@@ -623,19 +623,6 @@ wheels = [
 ]
 
 [[package]]
-name = "langchain-mcp-adapters"
-version = "0.0.11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "langchain-core" },
-    { name = "mcp" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/a8/931c13137f6f87b791d77241f0593f4a805b62e7161515d22f8334446d8d/langchain_mcp_adapters-0.0.11.tar.gz", hash = "sha256:664b0aac83f0b41c2a0d00344a608a59df55b07e27cde303a26334c7e3ea4051", size = 15628 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/0d/c896c194222965494a7be56513d1da452ece4111e19bb97de1b3677e289b/langchain_mcp_adapters-0.0.11-py3-none-any.whl", hash = "sha256:e10a5ee6b5823fe51d93439011bfc92d9d929ff16b8e982ba5bf51d0bcf650af", size = 10652 },
-]
-
-[[package]]
 name = "langchain-openai"
 version = "0.3.16"
 source = { registry = "https://pypi.org/simple" }
@@ -680,7 +667,7 @@ wheels = [
 
 [[package]]
 name = "langgraph-api"
-version = "0.2.21"
+version = "0.2.27"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cloudpickle" },
@@ -703,9 +690,9 @@ dependencies = [
     { name = "uvicorn" },
     { name = "watchfiles" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cb/ba/590c7f25a95c84196387546fbbcc0d921cf42dcb84c37751c613b92eeb99/langgraph_api-0.2.21.tar.gz", hash = "sha256:6a9802fd9134b188e0bb024b28d1bf413cb04185e096ec76481660e461e4c82f", size = 170317 }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/39/796960b1c6d6196f3119081e6072d5a53797003c9695d576550c5590e346/langgraph_api-0.2.27.tar.gz", hash = "sha256:d53c77456de3888164fde8f1703b050c245aebdab3ba42b1868d4bfe319343f5", size = 172523 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/6a/5cdeb95165bf3e318a215f6a2bd347639da37af7b1db7f940ea25723be04/langgraph_api-0.2.21-py3-none-any.whl", hash = "sha256:fa26b9727b4538158a37b1cbf3fe8f42766bbbbf192aa7abaef092dcb477ae92", size = 205528 },
+    { url = "https://files.pythonhosted.org/packages/8e/0a/d224b694ae1033b90067096cf19ff0628f55053f267cea2c3224cd1e5417/langgraph_api-0.2.27-py3-none-any.whl", hash = "sha256:f2f6ec669e22f2ab6ebaa971573c9b3bdade8d83a968cfa3493de85b154b418b", size = 208097 },
 ]
 
 [[package]]
@@ -794,7 +781,7 @@ wheels = [
 
 [[package]]
 name = "mcp"
-version = "1.8.0"
+version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -807,9 +794,9 @@ dependencies = [
     { name = "starlette" },
     { name = "uvicorn", marker = "sys_platform != 'emscripten'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/97/0a3e08559557b0ac5799f9fb535fbe5a4e4dcdd66ce9d32e7a74b4d0534d/mcp-1.8.0.tar.gz", hash = "sha256:263dfb700540b726c093f0c3e043f66aded0730d0b51f04eb0a3eb90055fe49b", size = 264641 }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/8d/0f4468582e9e97b0a24604b585c651dfd2144300ecffd1c06a680f5c8861/mcp-1.9.0.tar.gz", hash = "sha256:905d8d208baf7e3e71d70c82803b89112e321581bcd2530f9de0fe4103d28749", size = 281432 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/b2/4ac3bd17b1fdd65658f18de4eb0c703517ee0b483dc5f56467802a9197e0/mcp-1.8.0-py3-none-any.whl", hash = "sha256:889d9d3b4f12b7da59e7a3933a0acadae1fce498bfcd220defb590aa291a1334", size = 119544 },
+    { url = "https://files.pythonhosted.org/packages/a5/d5/22e36c95c83c80eb47c83f231095419cf57cf5cca5416f1c960032074c78/mcp-1.9.0-py3-none-any.whl", hash = "sha256:9dfb89c8c56f742da10a5910a1f64b0d2ac2c3ed2bd572ddb1cfab7f35957178", size = 125082 },
 ]
 
 [[package]]
@@ -1465,9 +1452,9 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-anthropic" },
     { name = "langchain-core" },
-    { name = "langchain-mcp-adapters" },
     { name = "langchain-openai" },
     { name = "langgraph" },
+    { name = "mcp" },
     { name = "pydantic" },
     { name = "supabase" },
 ]
@@ -1486,16 +1473,16 @@ requires-dist = [
     { name = "langchain", specifier = "==0.3.25" },
     { name = "langchain-anthropic", specifier = "==0.3.13" },
     { name = "langchain-core", specifier = "==0.3.59" },
-    { name = "langchain-mcp-adapters", specifier = "==0.0.11" },
     { name = "langchain-openai", specifier = "==0.3.16" },
     { name = "langgraph", specifier = "==0.4.3" },
+    { name = "mcp", specifier = ">=1.9.0" },
     { name = "pydantic", specifier = "==2.11.3" },
     { name = "supabase", specifier = ">=2.15.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "langgraph-api", specifier = "==0.2.21" },
+    { name = "langgraph-api", specifier = "==0.2.27" },
     { name = "langgraph-cli", specifier = "==0.2.10" },
     { name = "langgraph-runtime-inmem", specifier = ">=0.0.11" },
     { name = "ruff", specifier = ">=0.8.4" },

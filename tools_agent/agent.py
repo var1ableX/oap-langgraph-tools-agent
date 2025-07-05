@@ -1,3 +1,4 @@
+import os
 from langchain_core.runnables import RunnableConfig
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -136,6 +137,24 @@ class GraphConfigPydantic(BaseModel):
     )
 
 
+def get_api_key_for_model(model_name: str, config: RunnableConfig):
+    model_name = model_name.lower()
+    model_to_key = {
+        "openai:": "OPENAI_API_KEY",
+        "anthropic:": "ANTHROPIC_API_KEY", 
+        "google": "GOOGLE_API_KEY"
+    }
+    key_name = next((key for prefix, key in model_to_key.items() 
+                    if model_name.startswith(prefix)), None)
+    if not key_name:
+        return None
+    api_keys = config.get("configurable", {}).get("apiKeys", {})
+    if api_keys and api_keys.get(key_name) and len(api_keys[key_name]) > 0:
+        return api_keys[key_name]
+    # Fallback to environment variable
+    return os.getenv(key_name)
+
+
 async def graph(config: RunnableConfig):
     cfg = GraphConfigPydantic(**config.get("configurable", {}))
     tools = []
@@ -216,6 +235,7 @@ async def graph(config: RunnableConfig):
         cfg.model_name,
         temperature=cfg.temperature,
         max_tokens=cfg.max_tokens,
+        api_key=get_api_key_for_model(cfg.model_name, config) or "No token found"
     )
 
     return create_react_agent(

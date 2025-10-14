@@ -168,10 +168,18 @@ def get_api_key_for_model(model_name: str, config: RunnableConfig):
 
 
 async def graph(config: RunnableConfig):
+    import logging
     cfg = GraphConfigPydantic(**config.get("configurable", {}))
     tools = []
 
+    # DEBUGGING: Log config structure
+    logging.info(f"[TOOLS-AGENT] FULL CONFIG KEYS: {list(config.keys())}")
+    logging.info(f"[TOOLS-AGENT] CONFIGURABLE KEYS: {list(config.get('configurable', {}).keys())}")
+    logging.info(f"[TOOLS-AGENT] METADATA KEYS: {list(config.get('metadata', {}).keys())}")
+    
     supabase_token = config.get("configurable", {}).get("x-supabase-access-token")
+    logging.info(f"[TOOLS-AGENT] supabase_token present: {supabase_token is not None}")
+    
     if cfg.rag and cfg.rag.rag_url and cfg.rag.collections and supabase_token:
         for collection in cfg.rag.collections:
             rag_tool = await create_rag_tool(

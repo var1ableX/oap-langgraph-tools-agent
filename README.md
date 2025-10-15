@@ -42,10 +42,10 @@ After setting your environment variables, you can start the server by running:
 ```bash
 # The --no-browser will disable auto-opening LangGraph studio when the server starts
 # optional, but recommended since the studio is not needed for this project
-uv run langgraph dev --no-browser
+uv run langgraph dev --no-browser --port 2025
 ```
 
-The server will now be running on `http://localhost:2024`.
+The server will now be running on `http://localhost:2025`.
 
 ## Open Agent Platform
 

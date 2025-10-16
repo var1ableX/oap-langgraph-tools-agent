@@ -1,37 +1,50 @@
+# Quickstart
+
+### Start All Agents
+
+```
+1. source .venv/bin/activate
+2. Run the following in each respective agent.
+uv run langgraph dev --no-browser --port 2025
+uv run langgraph dev --no-browser --port 2026
+uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking
+yarn dev
+```
+
 # Open Agent Platform LangGraph Tools Agent
 
 A pre-built LangGraph tools agent for Open Agent Platform. It contains support for MCP servers and a LangConnect RAG tool.
 
-> [!TIP]
+> \[!TIP]
 > This project is built for [Open Agent Platform](https://github.com/langchain-ai/open-agent-platform), a citizen developer platform for building, testing, and using agents.
 
 ## Setup
 
 First, clone the repository and create a new virtual environment:
 
-```bash
+```Shell
 git clone https://github.com/langchain-ai/oap-langgraph-tools-agent.git
 ```
 
-```bash
+```Shell
 uv venv
 ```
 
 Activate the virtual environment:
 
-```bash
+```Shell
 source .venv/bin/activate
 ```
 
 Install dependencies:
 
-```bash
+```Shell
 uv sync
 ```
 
 Then set the environment variables:
 
-```bash
+```Shell
 cp .env.example .env
 ```
 
@@ -39,7 +52,7 @@ This project requires a Supabase account with authentication to be setup. This i
 
 After setting your environment variables, you can start the server by running:
 
-```bash
+```Shell
 # The --no-browser will disable auto-opening LangGraph studio when the server starts
 # optional, but recommended since the studio is not needed for this project
 uv run langgraph dev --no-browser --port 2025
@@ -61,7 +74,7 @@ Requests must contain an `Authorization` header with a `Bearer` token. This toke
 
 The auth handler then takes that token and verifies it with Supabase. If the token is valid, it returns the user's identity. If the token is invalid, it raises an exception. This means you must have a Supabase URL & key set in your environment variables to use this auth handler:
 
-```bash
+```Shell
 SUPABASE_URL=""
 # Ensure this is your Supabase Service Role key
 SUPABASE_KEY=""
@@ -88,6 +101,7 @@ By using custom authentication, we can call this LangGraph server directly from 
 For more info, see our [LangGraph custom auth docs](https://langchain-ai.github.io/langgraph/tutorials/auth/getting_started/).
 
 ## Model API Keys
+
 This agent is configured to accept model API keys set by a user in the OAP settings page. The default OAP implementation allows users to add their own OpenAI, Anthropic, and Google API keys, and these can easily be extended in OAP.
 
 If a user sets their API keys in the OAP settings page, those keys will be passed to the agent through the config in an 'apiKeys' field and used by default. Otherwise, we will automatically fall back on the environment variables set in the agent deployed on LangGraph platform.

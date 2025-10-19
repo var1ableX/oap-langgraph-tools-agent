@@ -106,7 +106,12 @@ async def fetch_tokens(config: RunnableConfig) -> dict[str, Any]:
     if current_tokens:
         return current_tokens
 
-    supabase_token = config.get("configurable", {}).get("x-supabase-access-token")
+    # Try multiple possible locations for the token (OAP passes it in metadata)
+    supabase_token = (
+        config.get("configurable", {}).get("x-supabase-access-token") or
+        config.get("metadata", {}).get("x-supabase-access-token") or
+        config.get("metadata", {}).get("supabaseAccessToken")  # ← Actual OAP location
+    )
     if not supabase_token:
         return None
 

@@ -177,8 +177,15 @@ async def graph(config: RunnableConfig):
     logging.info(f"[TOOLS-AGENT] CONFIGURABLE KEYS: {list(config.get('configurable', {}).keys())}")
     logging.info(f"[TOOLS-AGENT] METADATA KEYS: {list(config.get('metadata', {}).keys())}")
     
-    supabase_token = config.get("configurable", {}).get("x-supabase-access-token")
+    # Try multiple possible locations for the token (OAP passes it in metadata)
+    supabase_token = (
+        config.get("configurable", {}).get("x-supabase-access-token") or
+        config.get("metadata", {}).get("x-supabase-access-token") or
+        config.get("metadata", {}).get("supabaseAccessToken")  # ← Actual OAP location
+    )
     logging.info(f"[TOOLS-AGENT] supabase_token present: {supabase_token is not None}")
+    if supabase_token:
+        logging.info(f"[TOOLS-AGENT] Token length: {len(supabase_token)}")
     
     if cfg.rag and cfg.rag.rag_url and cfg.rag.collections and supabase_token:
         for collection in cfg.rag.collections:

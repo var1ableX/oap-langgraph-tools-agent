@@ -4,10 +4,10 @@
 
 ```
 1. source .venv/bin/activate
-2. Run the following in each respective agent.
+2. Run the following in each respective agent. tools agent, supervisor agent, deep-researcher agent
 uv run langgraph dev --no-browser --port 2025
 uv run langgraph dev --no-browser --port 2026
-uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking
+uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking --port 2027
 yarn dev
 ```
 

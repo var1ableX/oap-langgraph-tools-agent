@@ -8,6 +8,7 @@ authors = [
 requires-python = ">=3.11.0,<3.13"
 dependencies = [
     "langgraph>=0.6.2",
+    "langsmith>=0.3.37", # Added
     "langchain-anthropic>=0.3.18",
     "langchain-core>=0.3.72",
     "langchain-openai>=0.3.28",
@@ -16,6 +17,7 @@ dependencies = [
     "mcp>=1.9.1",
     "supabase>=2.15.1",
     "aiohttp>=3.8.0",
+    "python-dotenv>=1.0.1",
 ]
 
 [tool.setuptools]
